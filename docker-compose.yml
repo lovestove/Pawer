@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  bot:
+    build:
+      context: ./bot
+    env_file:
+      - ./bot/.env
+    restart: always
+    command: python -m app.run
+networks:
+  default:
+    driver: bridge
