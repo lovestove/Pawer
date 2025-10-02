@@ -1,9 +1,10 @@
 from aiogram import Router
 
-from . import common, stats, settings, feedback, misc, pet, webapp
-
 
 def setup_handlers() -> Router:
+    from . import common, stats, settings, feedback, misc, pet
+    from ..keyboards import webapp
+
     router = Router()
     router.include_router(common.router)
     router.include_router(stats.router)

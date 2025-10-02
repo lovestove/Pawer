@@ -2,25 +2,26 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pawer - Твой цифровой питомец</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Pawer - Твой питомец</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #a8e6cf 0%, #dcedc8 50%, #b2dfdb 100%);
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
         }
 
-        /* Анимированный фон с частицами */
-        .bg-particles {
+        /* Фоновые облака */
+        .sky-bg {
             position: fixed;
             top: 0;
             left: 0;
@@ -28,20 +29,26 @@
             height: 100%;
             pointer-events: none;
             z-index: 0;
+            overflow: hidden;
         }
 
-        .particle {
+        .cloud {
             position: absolute;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            animation: float 15s infinite;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 100px;
+            animation: cloudFloat 30s infinite linear;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 100px;
+        }
+
+        @keyframes cloudFloat {
+            from { transform: translateX(-200px); }
+            to { transform: translateX(calc(100vw + 200px)); }
         }
 
         .container {
@@ -49,64 +56,94 @@
             z-index: 1;
             max-width: 480px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 16px;
             min-height: 100vh;
+            padding-bottom: 90px;
         }
 
-        /* Экран имени */
-        .name-screen {
+        /* Экран загрузки */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #4caf50 0%, #81c784 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            text-align: center;
-            animation: fadeIn 0.6s ease;
+            z-index: 9999;
+            transition: opacity 0.5s;
         }
 
-        .name-screen h1 {
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .logo {
+            font-size: 80px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .loading-text {
             color: white;
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 20px;
+        }
+
+        /* Экран приветствия */
+        .welcome-screen {
+            display: none;
+            text-align: center;
+            padding-top: 60px;
+            animation: fadeIn 0.6s;
+        }
+
+        .welcome-title {
             font-size: 32px;
             font-weight: 800;
+            color: #2e7d32;
             margin-bottom: 10px;
-            text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .name-screen p {
-            color: rgba(255,255,255,0.9);
+        .welcome-subtitle {
             font-size: 16px;
+            color: #558b2f;
             margin-bottom: 40px;
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            border-radius: 30px;
-            padding: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            margin-bottom: 16px;
         }
 
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .pet-input {
+        .input-field {
             width: 100%;
-            padding: 16px 20px;
+            padding: 16px;
             font-size: 18px;
-            border: none;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            margin-bottom: 16px;
             transition: all 0.3s;
-            text-align: center;
+            background: #f5f5f5;
         }
 
-        .pet-input:focus {
+        .input-field:focus {
             outline: none;
-            transform: scale(1.02);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #4caf50;
+            background: white;
         }
 
         .btn {
@@ -115,96 +152,69 @@
             font-size: 18px;
             font-weight: 700;
             border: none;
-            border-radius: 20px;
+            border-radius: 16px;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
             color: white;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
 
         .btn:active {
-            transform: translateY(0);
+            transform: scale(0.98);
         }
 
-        /* Экран яйца */
-        .egg-screen {
+        /* Экран выбора яйца */
+        .egg-selection-screen {
             display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            animation: fadeIn 0.6s;
+        }
+
+        .eggs-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .egg-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
             text-align: center;
-        }
-
-        .egg-container {
-            position: relative;
-            margin: 40px 0;
-        }
-
-        .egg {
-            width: 200px;
-            height: 250px;
-            background: linear-gradient(135deg, #ffeaa7 0%, #fd79a8 100%);
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-            position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            animation: eggBounce 2s infinite;
             cursor: pointer;
             transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            border: 3px solid transparent;
         }
 
-        .egg::before {
-            content: '';
-            position: absolute;
-            top: 20%;
-            left: 10%;
-            right: 10%;
-            height: 30px;
-            background: rgba(255,255,255,0.3);
-            border-radius: 50%;
-            filter: blur(5px);
+        .egg-card:active {
+            transform: scale(0.95);
         }
 
-        .egg:hover {
-            transform: scale(1.05);
+        .egg-card.selected {
+            border-color: #4caf50;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
         }
 
-        @keyframes eggBounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+        .egg-icon {
+            font-size: 64px;
+            margin-bottom: 8px;
         }
 
-        .crack-animation {
-            animation: crack 0.5s;
+        .egg-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2e7d32;
         }
 
-        @keyframes crack {
-            0% { transform: scale(1); }
-            25% { transform: scale(1.1) rotate(-5deg); }
-            50% { transform: scale(0.9) rotate(5deg); }
-            75% { transform: scale(1.05) rotate(-3deg); }
-            100% { transform: scale(1) rotate(0); }
-        }
-
-        .tap-hint {
-            font-size: 16px;
-            color: white;
-            margin-top: 20px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .egg-rarity {
+            font-size: 12px;
+            color: #7cb342;
+            margin-top: 4px;
         }
 
         /* Главный экран */
@@ -212,138 +222,200 @@
             display: none;
         }
 
-        .pet-header {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(20px);
-            border-radius: 25px;
-            padding: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
         }
 
-        .pet-name {
-            font-size: 28px;
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .pet-name-display {
+            font-size: 24px;
             font-weight: 800;
-            color: white;
-            margin-bottom: 5px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            color: #2e7d32;
         }
 
-        .pet-level {
-            font-size: 14px;
-            color: rgba(255,255,255,0.9);
+        .coins {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #ffd54f, #ffb300);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+        }
+
+        .level-bar {
+            background: #e8f5e9;
+            height: 8px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .level-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #66bb6a);
+            border-radius: 8px;
+            transition: width 0.5s;
+        }
+
+        .level-text {
+            font-size: 12px;
+            color: #558b2f;
+            margin-top: 4px;
             font-weight: 600;
         }
 
-        .pet-display {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            border-radius: 30px;
-            padding: 40px 20px;
-            margin-bottom: 20px;
+        /* Питомец */
+        .pet-container {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 24px;
+            padding: 32px 20px;
+            margin-bottom: 16px;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            min-height: 300px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+            min-height: 280px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            position: relative;
-            overflow: hidden;
         }
 
-        .pet-character {
+        .pet-container::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(139, 195, 74, 0.2);
+            border-radius: 50% 50% 0 0;
+        }
+
+        .pet-sprite {
             font-size: 120px;
-            margin: 20px 0;
-            animation: petIdle 3s infinite;
-            display: inline-block;
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));
+            animation: petFloat 3s ease-in-out infinite;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.15));
+            position: relative;
+            z-index: 1;
         }
 
-        @keyframes petIdle {
-            0%, 100% { transform: translateY(0) rotate(-5deg); }
-            50% { transform: translateY(-10px) rotate(5deg); }
+        @keyframes petFloat {
+            0%, 100% { transform: translateY(0) rotate(-3deg); }
+            50% { transform: translateY(-15px) rotate(3deg); }
         }
 
-        .pet-emotion {
+        .pet-status {
+            margin-top: 16px;
             font-size: 16px;
-            color: white;
+            color: #2e7d32;
             font-weight: 600;
-            margin-top: 10px;
+            position: relative;
+            z-index: 1;
         }
 
         /* Статы */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(20px);
+        .stats-container {
+            background: white;
             border-radius: 20px;
-            padding: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
         }
 
-        .stat-label {
+        .stat-row {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: rgba(255,255,255,0.9);
-            margin-bottom: 8px;
-            font-weight: 600;
+            margin-bottom: 12px;
         }
 
-        .stat-bar {
-            background: rgba(0,0,0,0.2);
-            height: 10px;
-            border-radius: 10px;
+        .stat-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .stat-icon {
+            font-size: 24px;
+            width: 36px;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-name {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .stat-bar-bg {
+            background: #e0e0e0;
+            height: 12px;
+            border-radius: 12px;
             overflow: hidden;
         }
 
-        .stat-fill {
+        .stat-bar-fill {
             height: 100%;
-            border-radius: 10px;
-            transition: width 0.5s ease;
-            box-shadow: 0 0 10px currentColor;
+            border-radius: 12px;
+            transition: width 0.5s ease, background 0.3s;
         }
 
-        .stat-fill.health { background: linear-gradient(90deg, #ff6b6b, #ff8787); }
-        .stat-fill.happiness { background: linear-gradient(90deg, #ffd93d, #ffed4e); }
-        .stat-fill.energy { background: linear-gradient(90deg, #6bcf7f, #51cf66); }
-        .stat-fill.hunger { background: linear-gradient(90deg, #ff922b, #ffa94d); }
+        .stat-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2e7d32;
+            min-width: 45px;
+            text-align: right;
+        }
 
         /* Действия */
+        .actions-container {
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        .actions-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2e7d32;
+            margin-bottom: 12px;
+        }
+
         .actions-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 12px;
-            margin-bottom: 20px;
         }
 
         .action-btn {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            padding: 20px;
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border: none;
+            border-radius: 16px;
+            padding: 16px 8px;
+            cursor: pointer;
+            transition: all 0.3s;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .action-btn:hover {
-            background: rgba(255, 255, 255, 0.35);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
         .action-btn:active {
@@ -351,48 +423,52 @@
         }
 
         .action-icon {
-            font-size: 36px;
+            font-size: 32px;
         }
 
         .action-label {
-            font-size: 14px;
+            font-size: 11px;
             font-weight: 700;
-            color: white;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            color: #2e7d32;
+            text-align: center;
         }
 
-        /* Нижнее меню */
+        .action-cost {
+            font-size: 10px;
+            color: #7cb342;
+            margin-top: 2px;
+        }
+
+        /* Нижняя навигация */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(30px);
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 12px 20px 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            padding: 8px 0 20px;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
             z-index: 100;
+            box-shadow: 0 -2px 16px rgba(0,0,0,0.08);
         }
 
         .nav-btn {
+            background: none;
+            border: none;
+            padding: 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
-            padding: 8px;
-            background: transparent;
-            border: none;
+            gap: 4px;
             cursor: pointer;
             transition: all 0.3s;
-            border-radius: 12px;
+            color: #9e9e9e;
         }
 
-        .nav-btn:active {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(0.95);
+        .nav-btn.active {
+            color: #4caf50;
         }
 
         .nav-icon {
@@ -401,427 +477,872 @@
 
         .nav-label {
             font-size: 11px;
-            color: white;
             font-weight: 600;
         }
 
+        /* Экран магазина */
+        .shop-screen {
+            display: none;
+        }
+
+        .shop-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .shop-tab {
+            flex: 1;
+            padding: 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-weight: 700;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .shop-tab.active {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+
+        .shop-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .shop-item {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .shop-item:active {
+            transform: scale(0.98);
+        }
+
+        .shop-item-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        .shop-item-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2e7d32;
+            margin-bottom: 4px;
+        }
+
+        .shop-item-desc {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .shop-item-price {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #ff9800;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            animation: modalSlide 0.3s;
+        }
+
+        @keyframes modalSlide {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2e7d32;
+            margin-bottom: 8px;
+        }
+
+        .modal-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+
         /* Уведомления */
-        .notification {
+        .toast {
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%) translateY(-100px);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            padding: 15px 25px;
-            border-radius: 20px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-            z-index: 1000;
-            animation: slideDown 0.5s forwards;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: toastSlide 0.3s forwards;
             max-width: 90%;
-            text-align: center;
-            font-weight: 600;
         }
 
-        @keyframes slideDown {
+        @keyframes toastSlide {
             to { transform: translateX(-50%) translateY(0); }
         }
 
+        .toast-icon {
+            font-size: 24px;
+        }
+
+        .toast-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .hidden {
             display: none !important;
         }
 
-        /* Streak индикатор */
-        .streak-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: rgba(255, 255, 255, 0.3);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 700;
-            color: white;
-            margin-top: 10px;
-        }
-
-        /* Анимация действия */
-        .action-animation {
-            animation: actionPop 0.6s;
-        }
-
-        @keyframes actionPop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2) rotate(10deg); }
-            100% { transform: scale(1) rotate(0); }
-        }
-
-        /* Responsive */
-        @media (max-width: 400px) {
-            .pet-character {
-                font-size: 100px;
-            }
+        /* Адаптивность */
+        @media (max-width: 380px) {
+            .pet-sprite { font-size: 100px; }
+            .actions-grid { grid-template-columns: repeat(4, 1fr); }
+            .action-label { font-size: 10px; }
         }
     </style>
 </head>
 <body>
-    <!-- Анимированный фон -->
-    <div class="bg-particles" id="particles"></div>
+    <!-- Фон с облаками -->
+    <div class="sky-bg" id="skyBg"></div>
+
+    <!-- Загрузка -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="logo">🐾</div>
+        <div class="loading-text">Pawer</div>
+    </div>
 
     <div class="container">
-        <!-- Экран ввода имени -->
-        <div class="name-screen" id="nameScreen">
-            <h1>🎉 Добро пожаловать!</h1>
-            <p>Начни своё приключение с цифровым питомцем</p>
+        <!-- Экран приветствия -->
+        <div class="welcome-screen" id="welcomeScreen">
+            <h1 class="welcome-title">Привет, друг! 👋</h1>
+            <p class="welcome-subtitle">Давай начнём твоё приключение</p>
 
-            <div class="glass-card">
-                <div class="input-group">
-                    <input
-                        type="text"
-                        class="pet-input"
-                        id="petNameInput"
-                        placeholder="Как назовёшь питомца?"
-                        maxlength="15"
-                    >
-                </div>
-                <button class="btn btn-primary" onclick="startGame()">
+            <div class="card">
+                <input
+                    type="text"
+                    class="input-field"
+                    id="petNameInput"
+                    placeholder="Как назовём питомца?"
+                    maxlength="15"
+                />
+                <button class="btn btn-primary" onclick="app.startJourney()">
                     Начать приключение ✨
                 </button>
             </div>
         </div>
 
-        <!-- Экран с яйцом -->
-        <div class="egg-screen" id="eggScreen">
-            <h1 style="color: white; font-size: 28px; margin-bottom: 10px;">
-                Магическое яйцо 🥚
-            </h1>
-            <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">
-                Нажми на яйцо, чтобы узнать, кто внутри!
-            </p>
+        <!-- Выбор яйца -->
+        <div class="egg-selection-screen" id="eggSelectionScreen">
+            <div class="card">
+                <h2 class="welcome-title" style="font-size: 24px;">Выбери яйцо 🥚</h2>
+                <p class="welcome-subtitle">Каждое яйцо - особенное</p>
 
-            <div class="egg-container">
-                <div class="egg" id="egg" onclick="hatchEgg()"></div>
+                <div class="eggs-grid" id="eggsGrid"></div>
+
+                <button class="btn btn-primary" style="margin-top: 16px;" onclick="app.hatchEgg()">
+                    Получить питомца 🎉
+                </button>
             </div>
-
-            <p class="tap-hint">👆 Нажми на яйцо</p>
         </div>
 
         <!-- Главный экран -->
         <div class="main-screen" id="mainScreen">
-            <!-- Заголовок -->
-            <div class="pet-header">
-                <div class="pet-name" id="petName">Пушок</div>
-                <div class="pet-level">Уровень 1 • 0/100 XP</div>
-                <div class="streak-badge">
-                    🔥 Серия: <span id="streakCount">1</span> дней
+            <!-- Шапка -->
+            <div class="header">
+                <div class="user-info">
+                    <div class="pet-name-display" id="petNameDisplay">Дружок</div>
+                    <div class="coins">
+                        <span>🪙</span>
+                        <span id="coinsDisplay">0</span>
+                    </div>
+                </div>
+                <div class="level-bar">
+                    <div class="level-fill" id="levelFill" style="width: 0%"></div>
+                </div>
+                <div class="level-text">
+                    Уровень <span id="levelDisplay">1</span> •
+                    <span id="xpDisplay">0</span>/<span id="xpMaxDisplay">100</span> XP
                 </div>
             </div>
 
             <!-- Питомец -->
-            <div class="pet-display">
-                <div class="pet-character" id="petCharacter">🐱</div>
-                <div class="pet-emotion" id="petEmotion">Счастлив и доволен! 😊</div>
+            <div class="pet-container">
+                <div class="pet-sprite" id="petSprite">🐱</div>
+                <div class="pet-status" id="petStatus">Радуется тебя видеть! 💚</div>
             </div>
 
             <!-- Статы -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">❤️ Здоровье</div>
-                    <div class="stat-bar">
-                        <div class="stat-fill health" style="width: 100%"></div>
+            <div class="stats-container">
+                <div class="stat-row">
+                    <div class="stat-icon">❤️</div>
+                    <div class="stat-content">
+                        <div class="stat-name">Здоровье</div>
+                        <div class="stat-bar-bg">
+                            <div class="stat-bar-fill" id="healthBar" style="width: 100%; background: linear-gradient(90deg, #f44336, #e57373);"></div>
+                        </div>
                     </div>
+                    <div class="stat-value"><span id="healthValue">100</span>/100</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-label">😊 Счастье</div>
-                    <div class="stat-bar">
-                        <div class="stat-fill happiness" style="width: 85%"></div>
+
+                <div class="stat-row">
+                    <div class="stat-icon">😊</div>
+                    <div class="stat-content">
+                        <div class="stat-name">Счастье</div>
+                        <div class="stat-bar-bg">
+                            <div class="stat-bar-fill" id="happinessBar" style="width: 100%; background: linear-gradient(90deg, #ffc107, #ffeb3b);"></div>
+                        </div>
                     </div>
+                    <div class="stat-value"><span id="happinessValue">100</span>/100</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-label">⚡ Энергия</div>
-                    <div class="stat-bar">
-                        <div class="stat-fill energy" style="width: 70%"></div>
+
+                <div class="stat-row">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-content">
+                        <div class="stat-name">Энергия</div>
+                        <div class="stat-bar-bg">
+                            <div class="stat-bar-fill" id="energyBar" style="width: 100%; background: linear-gradient(90deg, #2196f3, #64b5f6);"></div>
+                        </div>
                     </div>
+                    <div class="stat-value"><span id="energyValue">100</span>/100</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-label">🍕 Сытость</div>
-                    <div class="stat-bar">
-                        <div class="stat-fill hunger" style="width: 60%"></div>
+
+                <div class="stat-row">
+                    <div class="stat-icon">🍖</div>
+                    <div class="stat-content">
+                        <div class="stat-name">Сытость</div>
+                        <div class="stat-bar-bg">
+                            <div class="stat-bar-fill" id="hungerBar" style="width: 100%; background: linear-gradient(90deg, #ff9800, #ffb74d);"></div>
+                        </div>
                     </div>
+                    <div class="stat-value"><span id="hungerValue">100</span>/100</div>
                 </div>
             </div>
 
             <!-- Действия -->
-            <div class="actions-grid">
-                <button class="action-btn" onclick="feedPet()">
-                    <div class="action-icon">🍖</div>
-                    <div class="action-label">Покормить</div>
-                </button>
-                <button class="action-btn" onclick="playWithPet()">
-                    <div class="action-icon">🎮</div>
-                    <div class="action-label">Играть</div>
-                </button>
-                <button class="action-btn" onclick="washPet()">
-                    <div class="action-icon">🛁</div>
-                    <div class="action-label">Помыть</div>
-                </button>
-                <button class="action-btn" onclick="walkPet()">
-                    <div class="action-icon">🌳</div>
-                    <div class="action-label">Прогулка</div>
-                </button>
+            <div class="actions-container">
+                <div class="actions-title">Что будем делать? 🎮</div>
+                <div class="actions-grid">
+                    <button class="action-btn" onclick="app.feedPet()">
+                        <div class="action-icon">🍖</div>
+                        <div class="action-label">Кормить</div>
+                    </button>
+                    <button class="action-btn" onclick="app.playWithPet()">
+                        <div class="action-icon">🎾</div>
+                        <div class="action-label">Играть</div>
+                    </button>
+                    <button class="action-btn" onclick="app.washPet()">
+                        <div class="action-icon">🛁</div>
+                        <div class="action-label">Помыть</div>
+                    </button>
+                    <button class="action-btn" onclick="app.sleepPet()">
+                        <div class="action-icon">😴</div>
+                        <div class="action-label">Спать</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Экран магазина -->
+        <div class="shop-screen" id="shopScreen">
+            <div class="header">
+                <div class="welcome-title" style="font-size: 24px; margin-bottom: 8px;">Магазин 🏪</div>
+                <div class="coins" style="display: inline-flex; margin-bottom: 12px;">
+                    <span>🪙</span>
+                    <span id="coinsDisplayShop">0</span>
+                </div>
             </div>
 
-            <div style="height: 80px"></div>
+            <div class="shop-tabs">
+                <button class="shop-tab active" onclick="app.switchShopTab('food')">🍖 Еда</button>
+                <button class="shop-tab" onclick="app.switchShopTab('items')">🎁 Предметы</button>
+            </div>
+
+            <div class="shop-items" id="shopItems"></div>
         </div>
     </div>
 
     <!-- Нижняя навигация -->
-    <div class="bottom-nav hidden" id="bottomNav">
-        <button class="nav-btn">
+    <div class="bottom-nav" id="bottomNav">
+        <button class="nav-btn active" onclick="app.switchScreen('main')">
             <div class="nav-icon">🏠</div>
             <div class="nav-label">Дом</div>
         </button>
-        <button class="nav-btn">
-            <div class="nav-icon">🎒</div>
-            <div class="nav-label">Инвентарь</div>
+        <button class="nav-btn" onclick="app.switchScreen('shop')">
+            <div class="nav-icon">🏪</div>
+            <div class="nav-label">Магазин</div>
         </button>
-        <button class="nav-btn">
+        <button class="nav-btn" onclick="app.showComingSoon()">
             <div class="nav-icon">👥</div>
             <div class="nav-label">Друзья</div>
         </button>
-        <button class="nav-btn">
+        <button class="nav-btn" onclick="app.showComingSoon()">
             <div class="nav-icon">🏆</div>
             <div class="nav-label">Рейтинг</div>
         </button>
     </div>
 
+    <!-- Модальное окно -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-icon" id="modalIcon">✨</div>
+            <div class="modal-title" id="modalTitle">Заголовок</div>
+            <div class="modal-text" id="modalText">Текст</div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="app.closeModal()">Отмена</button>
+                <button class="btn btn-primary" id="modalConfirm">ОК</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Создание частиц для фона
-        function createParticles() {
-            const container = document.getElementById('particles');
-            for (let i = 0; i < 20; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.width = (Math.random() * 10 + 5) + 'px';
-                particle.style.height = particle.style.width;
-                particle.style.animationDelay = Math.random() * 15 + 's';
-                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-                container.appendChild(particle);
-            }
-        }
+        const app = {
+            tg: window.Telegram?.WebApp,
+            apiUrl: '/api',
+            userId: null,
+            pet: null,
+            selectedEgg: null,
 
-        createParticles();
+            eggs: [
+                { id: 1, icon: '🥚', name: 'Обычное', rarity: 'Частое', pets: ['🐱', '🐶', '🐰'] },
+                { id: 2, icon: '🎨', name: 'Радужное', rarity: 'Редкое', pets: ['🦊', '🐼', '🐻'] },
+                { id: 3, icon: '✨', name: 'Сияющее', rarity: 'Эпичное', pets: ['🦄', '🐉', '🦁'] },
+                { id: 4, icon: '🌟', name: 'Легенда', rarity: 'Легендарное', pets: ['🦋', '🐙', '🦚'] }
+            ],
 
-        // Доступные питомцы
-        const pets = [
-            { emoji: '🐱', name: 'Котик', type: 'cat' },
-            { emoji: '🐶', name: 'Щенок', type: 'dog' },
-            { emoji: '🐰', name: 'Зайчик', type: 'rabbit' },
-            { emoji: '🐹', name: 'Хомячок', type: 'hamster' },
-            { emoji: '🦊', name: 'Лисёнок', type: 'fox' },
-            { emoji: '🐼', name: 'Панда', type: 'panda' },
-            { emoji: '🦄', name: 'Единорог', type: 'unicorn' },
-            { emoji: '🐉', name: 'Дракончик', type: 'dragon' }
-        ];
+            shopItems: {
+                food: [
+                    { id: 'bread', icon: '🍞', name: 'Хлеб', desc: '+10 сытость', price: 10, effect: { hunger: 10 } },
+                    { id: 'apple', icon: '🍎', name: 'Яблоко', desc: '+15 сытость, +5 здоровье', price: 20, effect: { hunger: 15, health: 5 } },
+                    { id: 'meat', icon: '🍖', name: 'Мясо', desc: '+25 сытость', price: 35, effect: { hunger: 25 } },
+                    { id: 'pizza', icon: '🍕', name: 'Пицца', desc: '+30 сытость, +10 счастье', price: 50, effect: { hunger: 30, happiness: 10 } },
+                    { id: 'cake', icon: '🍰', name: 'Торт', desc: '+20 счастье', price: 60, effect: { happiness: 20 } },
+                    { id: 'golden', icon: '🌟', name: 'Золотое яблоко', desc: 'Все статы +30', price: 150, effect: { health: 30, happiness: 30, energy: 30, hunger: 30 } }
+                ],
+                items: [
+                    { id: 'ball', icon: '⚽', name: 'Мяч', desc: 'Для игр', price: 80 },
+                    { id: 'toy', icon: '🧸', name: 'Игрушка', desc: '+15 счастье', price: 100 },
+                    { id: 'bed', icon: '🛏️', name: 'Кровать', desc: 'Лучший сон', price: 200 },
+                    { id: 'potion', icon: '⚗️', name: 'Зелье энергии', desc: '+50 энергия', price: 120, effect: { energy: 50 } }
+                ]
+            },
 
-        let currentPet = null;
-        let petName = '';
-        let tapCount = 0;
+            init() {
+                this.createClouds();
 
-        // Показ уведомления
-        function showNotification(message) {
-            const notif = document.createElement('div');
-            notif.className = 'notification';
-            notif.textContent = message;
-            document.body.appendChild(notif);
-
-            setTimeout(() => {
-                notif.style.animation = 'slideDown 0.5s reverse';
-                setTimeout(() => notif.remove(), 500);
-            }, 2500);
-        }
-
-        // Начало игры
-        function startGame() {
-            const input = document.getElementById('petNameInput');
-            petName = input.value.trim();
-
-            if (!petName) {
-                input.style.animation = 'shake 0.5s';
-                setTimeout(() => input.style.animation = '', 500);
-                return;
-            }
-
-            document.getElementById('nameScreen').style.display = 'none';
-            document.getElementById('eggScreen').style.display = 'flex';
-        }
-
-        // Вылупление питомца
-        function hatchEgg() {
-            const egg = document.getElementById('egg');
-            tapCount++;
-
-            egg.classList.add('crack-animation');
-            setTimeout(() => egg.classList.remove('crack-animation'), 500);
-
-            if (tapCount >= 3) {
-                // Выбор случайного питомца
-                currentPet = pets[Math.floor(Math.random() * pets.length)];
-
-                // Анимация исчезновения яйца
-                egg.style.animation = 'none';
-                egg.style.transform = 'scale(0)';
-                egg.style.opacity = '0';
+                if (this.tg) {
+                    this.tg.ready();
+                    this.tg.expand();
+                    this.userId = this.tg.initDataUnsafe?.user?.id || 'test_user';
+                } else {
+                    this.userId = 'test_user';
+                }
 
                 setTimeout(() => {
-                    document.getElementById('eggScreen').style.display = 'none';
+                    this.loadUserData();
+                }, 1500);
+            },
+
+            createClouds() {
+                const sky = document.getElementById('skyBg');
+                for (let i = 0; i < 5; i++) {
+                    const cloud = document.createElement('div');
+                    cloud.className = 'cloud';
+                    cloud.style.width = (Math.random() * 80 + 60) + 'px';
+                    cloud.style.height = (Math.random() * 30 + 30) + 'px';
+                    cloud.style.top = (Math.random() * 40) + '%';
+                    cloud.style.left = '-200px';
+                    cloud.style.animationDelay = (Math.random() * 30) + 's';
+
+                    cloud.style.setProperty('--duration', (Math.random() * 20 + 30) + 's');
+                    sky.appendChild(cloud);
+                }
+            },
+
+            async loadUserData() {
+                try {
+                    const response = await fetch(`${this.apiUrl}/pet/get?user_id=${this.userId}`);
+                    const data = await response.json();
+
+                    if (data.success && data.pet) {
+                        this.pet = data.pet;
+                        this.showMainScreen();
+                    } else {
+                        this.showWelcomeScreen();
+                    }
+                } catch (error) {
+                    console.log('Первый запуск');
+                    this.showWelcomeScreen();
+                }
+            },
+
+            showWelcomeScreen() {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('welcomeScreen').style.display = 'block';
+            },
+
+            startJourney() {
+                const name = document.getElementById('petNameInput').value.trim();
+                if (!name) {
+                    this.showToast('❌', 'Пожалуйста, придумай имя для питомца');
+                    return;
+                }
+
+                if (name.length < 2) {
+                    this.showToast('❌', 'Имя слишком короткое, дорогой');
+                    return;
+                }
+
+                this.pet = { name, level: 1, xp: 0, coins: 100 };
+                this.showEggSelection();
+            },
+
+            showEggSelection() {
+                document.getElementById('welcomeScreen').style.display = 'none';
+                document.getElementById('eggSelectionScreen').style.display = 'block';
+
+                const grid = document.getElementById('eggsGrid');
+                grid.innerHTML = '';
+
+                this.eggs.forEach(egg => {
+                    const card = document.createElement('div');
+                    card.className = 'egg-card';
+                    card.innerHTML = `
+                        <div class="egg-icon">${egg.icon}</div>
+                        <div class="egg-name">${egg.name}</div>
+                        <div class="egg-rarity">${egg.rarity}</div>
+                    `;
+                    card.onclick = () => this.selectEgg(egg.id, card);
+                    grid.appendChild(card);
+                });
+            },
+
+            selectEgg(eggId, element) {
+                document.querySelectorAll('.egg-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                element.classList.add('selected');
+                this.selectedEgg = eggId;
+
+                if (this.tg) this.tg.HapticFeedback.impactOccurred('light');
+            },
+
+            async hatchEgg() {
+                if (!this.selectedEgg) {
+                    this.showToast('❌', 'Выбери яйцо, милый');
+                    return;
+                }
+
+                const egg = this.eggs.find(e => e.id === this.selectedEgg);
+                const petEmoji = egg.pets[Math.floor(Math.random() * egg.pets.length)];
+
+                this.pet.emoji = petEmoji;
+                this.pet.stats = {
+                    health: 100,
+                    happiness: 100,
+                    energy: 100,
+                    hunger: 100
+                };
+
+                try {
+                    const response = await fetch(`${this.apiUrl}/pet/create`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_id: this.userId,
+                            name: this.pet.name,
+                            emoji: this.pet.emoji,
+                            egg_type: this.selectedEgg
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        this.pet = data.pet;
+                    }
+                } catch (error) {
+                    console.log('Оффлайн режим');
+                }
+
+                this.showToast('🎉', `${this.pet.name} родился!`);
+                setTimeout(() => this.showMainScreen(), 1500);
+            },
+
+            showMainScreen() {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('eggSelectionScreen').style.display = 'none';
+                document.getElementById('mainScreen').style.display = 'block';
+                document.getElementById('bottomNav').style.display = 'grid';
+
+                this.updateUI();
+                this.startStatDecay();
+            },
+
+            updateUI() {
+                document.getElementById('petNameDisplay').textContent = this.pet.name;
+                document.getElementById('petSprite').textContent = this.pet.emoji || '🐱';
+                document.getElementById('coinsDisplay').textContent = this.pet.coins || 0;
+                document.getElementById('coinsDisplayShop').textContent = this.pet.coins || 0;
+                document.getElementById('levelDisplay').textContent = this.pet.level || 1;
+                document.getElementById('xpDisplay').textContent = this.pet.xp || 0;
+                document.getElementById('xpMaxDisplay').textContent = this.getMaxXP();
+
+                const xpPercent = ((this.pet.xp || 0) / this.getMaxXP()) * 100;
+                document.getElementById('levelFill').style.width = xpPercent + '%';
+
+                if (this.pet.stats) {
+                    this.updateStat('health', this.pet.stats.health);
+                    this.updateStat('happiness', this.pet.stats.happiness);
+                    this.updateStat('energy', this.pet.stats.energy);
+                    this.updateStat('hunger', this.pet.stats.hunger);
+                }
+
+                this.updatePetStatus();
+            },
+
+            updateStat(stat, value) {
+                value = Math.max(0, Math.min(100, value));
+                this.pet.stats[stat] = value;
+
+                document.getElementById(`${stat}Bar`).style.width = value + '%';
+                document.getElementById(`${stat}Value`).textContent = Math.round(value);
+
+                if (value < 30) {
+                    document.getElementById(`${stat}Bar`).style.opacity = '0.6';
+                } else {
+                    document.getElementById(`${stat}Bar`).style.opacity = '1';
+                }
+            },
+
+            updatePetStatus() {
+                const stats = this.pet.stats;
+                let status = '';
+
+                if (stats.hunger < 30) {
+                    status = 'Голодный... Покорми меня 🥺';
+                } else if (stats.energy < 30) {
+                    status = 'Устал... Хочу спать 😴';
+                } else if (stats.happiness < 30) {
+                    status = 'Грустный... Поиграй со мной 😢';
+                } else if (stats.health < 30) {
+                    status = 'Плохо себя чувствую 🤒';
+                } else if (stats.happiness > 80 && stats.hunger > 80) {
+                    status = 'Счастлив! Ты лучший! 🥰';
+                } else {
+                    status = 'Радуюсь тебя видеть! 💚';
+                }
+
+                document.getElementById('petStatus').textContent = status;
+            },
+
+            getMaxXP() {
+                return 100 * this.pet.level;
+            },
+
+            addXP(amount) {
+                this.pet.xp += amount;
+                const maxXP = this.getMaxXP();
+
+                if (this.pet.xp >= maxXP) {
+                    this.pet.xp -= maxXP;
+                    this.pet.level++;
+                    this.showToast('🎉', `Уровень повышен! Теперь ${this.pet.level} уровень!`);
+                    this.pet.coins += 50;
+                }
+
+                this.updateUI();
+                this.saveData();
+            },
+
+            async feedPet() {
+                if (this.pet.stats.hunger >= 95) {
+                    this.showToast('😊', 'Я уже сыт, спасибо!');
+                    return;
+                }
+
+                this.updateStat('hunger', this.pet.stats.hunger + 20);
+                this.updateStat('happiness', this.pet.stats.happiness + 5);
+                this.addXP(5);
+
+                this.animatePet();
+                this.showToast('🍖', 'Ням-ням! Очень вкусно! 😋');
+
+                if (this.tg) this.tg.HapticFeedback.impactOccurred('medium');
+                this.saveData();
+            },
+
+            async playWithPet() {
+                if (this.pet.stats.energy < 15) {
+                    this.showToast('😴', 'Я слишком устал... Дай мне поспать');
+                    return;
+                }
+
+                this.updateStat('happiness', this.pet.stats.happiness + 20);
+                this.updateStat('energy', this.pet.stats.energy - 15);
+                this.updateStat('hunger', this.pet.stats.hunger - 5);
+                this.addXP(10);
+
+                this.animatePet();
+                this.showToast('🎾', 'Ура! Это было весело! 🤩');
+
+                if (this.tg) this.tg.HapticFeedback.impactOccurred('medium');
+                this.saveData();
+            },
+
+            async washPet() {
+                this.updateStat('health', this.pet.stats.health + 10);
+                this.updateStat('happiness', this.pet.stats.happiness + 10);
+                this.addXP(5);
+
+                this.animatePet();
+                this.showToast('🛁', 'Теперь я чистый и свежий! ✨');
+
+                if (this.tg) this.tg.HapticFeedback.impactOccurred('light');
+                this.saveData();
+            },
+
+            async sleepPet() {
+                if (this.pet.stats.energy >= 95) {
+                    this.showToast('😊', 'Я полон энергии, не хочу спать!');
+                    return;
+                }
+
+                this.updateStat('energy', this.pet.stats.energy + 40);
+                this.updateStat('health', this.pet.stats.health + 10);
+                this.addXP(8);
+
+                this.animatePet();
+                this.showToast('😴', 'Хорошо поспал! Готов к приключениям! 💪');
+
+                if (this.tg) this.tg.HapticFeedback.impactOccurred('light');
+                this.saveData();
+            },
+
+            animatePet() {
+                const sprite = document.getElementById('petSprite');
+                sprite.style.animation = 'none';
+                setTimeout(() => {
+                    sprite.style.animation = 'petFloat 3s ease-in-out infinite';
+                }, 10);
+
+                sprite.style.transform = 'scale(1.2) rotate(10deg)';
+                setTimeout(() => {
+                    sprite.style.transform = '';
+                }, 300);
+            },
+
+            startStatDecay() {
+                setInterval(() => {
+                    this.updateStat('hunger', this.pet.stats.hunger - 1);
+                    this.updateStat('energy', this.pet.stats.energy - 0.5);
+
+                    if (this.pet.stats.hunger < 50 || this.pet.stats.energy < 50) {
+                        this.updateStat('happiness', this.pet.stats.happiness - 0.5);
+                    }
+
+                    this.updatePetStatus();
+
+                    if (Math.random() < 0.1) {
+                        this.saveData();
+                    }
+                }, 60000); // Каждую минуту
+            },
+
+            switchScreen(screen) {
+                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                event.currentTarget.classList.add('active');
+
+                document.getElementById('mainScreen').style.display = 'none';
+                document.getElementById('shopScreen').style.display = 'none';
+
+                if (screen === 'main') {
                     document.getElementById('mainScreen').style.display = 'block';
-                    document.getElementById('bottomNav').classList.remove('hidden');
+                } else if (screen === 'shop') {
+                    document.getElementById('shopScreen').style.display = 'block';
+                    this.loadShop('food');
+                }
 
-                    // Установка имени и питомца
-                    document.getElementById('petName').textContent = petName;
-                    document.getElementById('petCharacter').textContent = currentPet.emoji;
+                if (this.tg) this.tg.HapticFeedback.impactOccurred('light');
+            },
 
-                    showNotification(`${currentPet.name} ${petName} родился! 🎉`);
-                }, 500);
+            switchShopTab(tab) {
+                document.querySelectorAll('.shop-tab').forEach(btn => btn.classList.remove('active'));
+                event.currentTarget.classList.add('active');
+                this.loadShop(tab);
+            },
+
+            loadShop(category) {
+                const container = document.getElementById('shopItems');
+                container.innerHTML = '';
+
+                this.shopItems[category].forEach(item => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'shop-item';
+                    itemEl.innerHTML = `
+                        <div class="shop-item-icon">${item.icon}</div>
+                        <div class="shop-item-name">${item.name}</div>
+                        <div class="shop-item-desc">${item.desc}</div>
+                        <div class="shop-item-price">
+                            <span>🪙</span>
+                            <span>${item.price}</span>
+                        </div>
+                    `;
+                    itemEl.onclick = () => this.buyItem(item);
+                    container.appendChild(itemEl);
+                });
+            },
+
+            buyItem(item) {
+                if (this.pet.coins < item.price) {
+                    this.showToast('❌', 'Недостаточно монет, дорогой');
+                    return;
+                }
+
+                this.showModal(
+                    item.icon,
+                    'Купить предмет?',
+                    `${item.name} за ${item.price} 🪙`,
+                    () => {
+                        this.pet.coins -= item.price;
+
+                        if (item.effect) {
+                            Object.keys(item.effect).forEach(stat => {
+                                this.updateStat(stat, this.pet.stats[stat] + item.effect[stat]);
+                            });
+                        }
+
+                        this.showToast('✅', `Куплено: ${item.name}`);
+                        this.updateUI();
+                        this.saveData();
+                        this.closeModal();
+
+                        if (this.tg) this.tg.HapticFeedback.notificationOccurred('success');
+                    }
+                );
+            },
+
+            showComingSoon() {
+                this.showToast('🚀', 'Скоро появится, дорогой!');
+            },
+
+            showModal(icon, title, text, onConfirm) {
+                document.getElementById('modalIcon').textContent = icon;
+                document.getElementById('modalTitle').textContent = title;
+                document.getElementById('modalText').textContent = text;
+                document.getElementById('modalConfirm').onclick = onConfirm;
+                document.getElementById('modal').classList.add('active');
+            },
+
+            closeModal() {
+                document.getElementById('modal').classList.remove('active');
+            },
+
+            showToast(icon, text) {
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.innerHTML = `
+                    <div class="toast-icon">${icon}</div>
+                    <div class="toast-text">${text}</div>
+                `;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.animation = 'toastSlide 0.3s reverse';
+                    setTimeout(() => toast.remove(), 300);
+                }, 2500);
+            },
+
+            async saveData() {
+                try {
+                    await fetch(`${this.apiUrl}/pet/update`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_id: this.userId,
+                            pet: this.pet
+                        })
+                    });
+                } catch (error) {
+                    console.log('Оффлайн, сохранение локально');
+                }
             }
-        }
+        };
 
-        // Действия с питомцем
-        function feedPet() {
-            const character = document.getElementById('petCharacter');
-            character.classList.add('action-animation');
-            setTimeout(() => character.classList.remove('action-animation'), 600);
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
 
-            showNotification('Ням-ням! Вкусно! 😋');
-            updateStat('hunger', 15);
-            updateStat('happiness', 5);
-            updateEmotion('Сыт и доволен! 😊');
-        }
-
-        function playWithPet() {
-            const character = document.getElementById('petCharacter');
-            character.classList.add('action-animation');
-            setTimeout(() => character.classList.remove('action-animation'), 600);
-
-            showNotification('Ура! Это было весело! 🎉');
-            updateStat('happiness', 20);
-            updateStat('energy', -10);
-            updateEmotion('В восторге! 🤩');
-        }
-
-        function washPet() {
-            const character = document.getElementById('petCharacter');
-            character.classList.add('action-animation');
-            setTimeout(() => character.classList.remove('action-animation'), 600);
-
-            showNotification('Теперь чистый и свежий! ✨');
-            updateStat('health', 10);
-            updateStat('happiness', 10);
-            updateEmotion('Чистенький! 💫');
-        }
-
-        function walkPet() {
-            const character = document.getElementById('petCharacter');
-            character.classList.add('action-animation');
-            setTimeout(() => character.classList.remove('action-animation'), 600);
-
-            showNotification('Отличная прогулка! 🌳');
-            updateStat('happiness', 15);
-            updateStat('energy', -15);
-            updateStat('hunger', -10);
-            updateEmotion('Активен! 🏃');
-        }
-
-        function updateStat(statName, change) {
-            // Имитация обновления статов (в реальности это будет через API)
-            const statBars = {
-                'hunger': document.querySelector('.stat-fill.hunger'),
-                'happiness': document.querySelector('.stat-fill.happiness'),
-                'energy': document.querySelector('.stat-fill.energy'),
-                'health': document.querySelector('.stat-fill.health')
-            };
-
-            const bar = statBars[statName];
-            if (bar) {
-                let currentWidth = parseInt(bar.style.width);
-                let newWidth = Math.max(0, Math.min(100, currentWidth + change));
-                bar.style.width = newWidth + '%';
-            }
-        }
-
-        function updateEmotion(emotion) {
-            document.getElementById('petEmotion').textContent = emotion;
-        }
-
-        // Добавляем анимацию тряски
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                25% { transform: translateX(-10px); }
-                75% { transform: translateX(10px); }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Симуляция снижения статов со временем
-        setInterval(() => {
-            updateStat('hunger', -2);
-            updateStat('energy', -1);
-
-            // Проверка низких статов
-            const hungerBar = document.querySelector('.stat-fill.hunger');
-            const energyBar = document.querySelector('.stat-fill.energy');
-
-            if (parseInt(hungerBar.style.width) < 30) {
-                updateEmotion('Голодный... 😢');
-            } else if (parseInt(energyBar.style.width) < 30) {
-                updateEmotion('Устал... 😴');
-            }
-        }, 30000); // Каждые 30 секунд
-
-        // Инициализация Telegram WebApp
-        if (window.Telegram?.WebApp) {
-            const tg = window.Telegram.WebApp;
-            tg.ready();
-            tg.expand();
-
-            // Настройка цветов под тему Telegram
-            if (tg.themeParams.bg_color) {
-                document.body.style.background = tg.themeParams.bg_color;
-            }
-
-            // Haptic feedback при действиях
-            window.feedPetOriginal = feedPet;
-            window.feedPet = function() {
-                tg.HapticFeedback.impactOccurred('medium');
-                feedPetOriginal();
-            };
-
-            window.playWithPetOriginal = playWithPet;
-            window.playWithPet = function() {
-                tg.HapticFeedback.impactOccurred('medium');
-                playWithPetOriginal();
-            };
-
-            window.washPetOriginal = washPet;
-            window.washPet = function() {
-                tg.HapticFeedback.impactOccurred('medium');
-                washPetOriginal();
-            };
-
-            window.walkPetOriginal = walkPet;
-            window.walkPet = function() {
-                tg.HapticFeedback.impactOccurred('medium');
-                walkPetOriginal();
-            };
+        // Предотвращаем закрытие при свайпе вниз
+        if (app.tg) {
+            app.tg.isClosingConfirmationEnabled = true;
         }
     </script>
 </body>
