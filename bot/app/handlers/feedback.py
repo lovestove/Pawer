@@ -4,8 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import StateFilter
 
-from app.states import UserStates
-from app.keyboards import get_back_keyboard
+from app.states.user_states import UserStates
+from app.keyboards.inline import get_back_keyboard
 
 router = Router()
 logger = logging.getLogger(__name__)
@@ -32,6 +32,7 @@ async def process_feedback(message: Message, state: FSMContext):
         reply_markup=get_back_keyboard(),
         parse_mode="HTML"
     )
+
 
     logger.info(f"Feedback from {message.from_user.id}: {feedback_text}")
     await state.clear()
