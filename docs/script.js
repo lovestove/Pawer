@@ -1,9 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
     const tg = window.Telegram.WebApp;
     tg.ready();
+    tg.expand(); // Expand the Mini App to full height
 
     const loader = document.getElementById("loader");
     const petApp = document.getElementById("pet-app");
+    const noPetScreen = document.getElementById("no-pet");
     const errorMessage = document.getElementById("error-message");
 
     const petNameEl = document.getElementById("pet-name");
@@ -32,26 +34,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function getEmotion(hunger, thirst, happiness) {
         const avg = (hunger + thirst + happiness) / 3;
-        if (avg > 80) return "😃";
-        if (avg > 60) return "🙂";
-        if (avg > 40) return "😐";
-        if (avg > 20) return "😟";
-        return "😭";
+        if (avg > 80) return '<i class="fa-solid fa-face-laugh-beam"></i>'; // Ecstatic
+        if (avg > 60) return '<i class="fa-solid fa-face-smile"></i>';     // Happy
+        if (avg > 40) return '<i class="fa-solid fa-face-meh"></i>';        // Neutral
+        if (avg > 20) return '<i class="fa-solid fa-face-frown"></i>';      // Sad
+        return '<i class="fa-solid fa-face-dizzy"></i>';                   // Miserable
     }
 
     function updateUI(pet) {
         if (!pet) return;
 
         petNameEl.textContent = pet.name;
-        petEmotionEl.textContent = getEmotion(pet.hunger, pet.thirst, pet.happiness);
+        petEmotionEl.innerHTML = getEmotion(pet.hunger, pet.thirst, pet.happiness);
+
+        const getColorForStat = (value) => {
+            if (value > 70) return '#4caf50'; // Green
+            if (value > 30) return '#ffc107'; // Amber
+            return '#f44336'; // Red
+        };
 
         hungerBar.style.width = `${pet.hunger}%`;
+        hungerBar.style.backgroundColor = getColorForStat(pet.hunger);
         hungerValue.textContent = `${pet.hunger}/100`;
 
         thirstBar.style.width = `${pet.thirst}%`;
+        thirstBar.style.backgroundColor = getColorForStat(pet.thirst);
         thirstValue.textContent = `${pet.thirst}/100`;
 
         happinessBar.style.width = `${pet.happiness}%`;
+        happinessBar.style.backgroundColor = getColorForStat(pet.happiness);
         happinessValue.textContent = `${pet.happiness}/100`;
     }
 
@@ -64,8 +75,9 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (response.status === 404) {
-                showError("Питомец не найден. Пожалуйста, создайте питомца в боте, используя команду /pet.");
+                // User doesn't have a pet yet, show the welcome screen
                 loader.classList.add("hidden");
+                noPetScreen.classList.remove("hidden");
                 return;
             }
 
