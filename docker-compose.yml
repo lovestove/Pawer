@@ -3,11 +3,13 @@ version: '3.8'
 services:
   bot:
     build:
-      context: ./bot
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./bot/Dockerfile
     container_name: telegram_bot
     env_file:
       - ./bot/.env
     volumes:
       - ./bot/bot_database.db:/usr/src/app/bot_database.db
+    ports:
+      - "8000:8000"
     restart: unless-stopped
