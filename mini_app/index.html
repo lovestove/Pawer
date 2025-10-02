@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Твой Питомец</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="loader" class="loader">Загрузка...</div>
+
+    <div id="pet-app" class="hidden">
+        <div class="pet-container">
+            <h1 id="pet-name"></h1>
+            <div class="pet-avatar">
+                <span id="pet-emotion">😃</span>
+            </div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat">
+                <label for="hunger-bar">Голод:</label>
+                <div class="progress-bar-container">
+                    <div id="hunger-bar" class="progress-bar"></div>
+                </div>
+                <span id="hunger-value"></span>
+            </div>
+            <div class="stat">
+                <label for="thirst-bar">Жажда:</label>
+                <div class="progress-bar-container">
+                    <div id="thirst-bar" class="progress-bar"></div>
+                </div>
+                <span id="thirst-value"></span>
+            </div>
+            <div class="stat">
+                <label for="happiness-bar">Счастье:</label>
+                <div class="progress-bar-container">
+                    <div id="happiness-bar" class="progress-bar"></div>
+                </div>
+                <span id="happiness-value"></span>
+            </div>
+        </div>
+
+        <div class="actions-container">
+            <button id="feed-button" class="action-button">🍖 Покормить</button>
+            <button id="water-button" class="action-button">💧 Напоить</button>
+            <button id="play-button" class="action-button">🎾 Поиграть</button>
+        </div>
+
+        <div id="error-message" class="error hidden"></div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -3,10 +3,12 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiohttp import web
 
 from app.core import settings, Database
 from app.handlers import setup_handlers
 from app.middlewares import user_middleware
+from app.web.app import create_web_app
 
 
 async def main():
@@ -27,7 +29,7 @@ async def main():
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
 
-    # Передача экземпляра базы данных в хендлеры
+    # Передача экземпляра базы данных в хендлеры и middleware
     dp["db"] = db
 
     # Настройка middleware
@@ -37,14 +39,31 @@ async def main():
     router = setup_handlers()
     dp.include_router(router)
 
-    # Удаление старых обновлений и запуск polling
+    # Создание и запуск веб-приложения
+    web_app = create_web_app(db=db)
+    runner = web.AppRunner(web_app)
+    await runner.setup()
+    site = web.TCPSite(runner, settings.WEB_SERVER_HOST, settings.WEB_SERVER_PORT)
+
+    logger.info("Starting bot and web server...")
+
+    # Удаление старых обновлений
     await bot.delete_webhook(drop_pending_updates=True)
-    logger.info("Bot started!")
-    await dp.start_polling(bot)
+
+    # Запуск обоих приложений
+    try:
+        await asyncio.gather(
+            dp.start_polling(bot),
+            site.start(),
+        )
+    finally:
+        await runner.cleanup()
+        await bot.session.close()
+        logger.info("Bot and web server stopped.")
 
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
-        logging.info("Bot stopped")
+        logging.info("Application stopped.")
