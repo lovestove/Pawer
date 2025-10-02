@@ -11,7 +11,7 @@ def setup_routes(app: web.Application):
     app.router.add_post("/api/pet/interact", interact_with_pet)
 
     # Serve static files for the Mini App
-    static_files_path = Path(__file__).parent.parent.parent.joinpath("mini_app")
+    static_files_path = Path(__file__).parent.parent.parent.joinpath("docs")
     app.router.add_static("/", path=static_files_path, name="static")
 
 
