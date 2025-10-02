@@ -46,8 +46,50 @@ class Database:
                 )
             ''')
 
+            # Таблица для питомцев
+            await db.execute('''
+                CREATE TABLE IF NOT EXISTS pets (
+                    pet_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER UNIQUE,
+                    name TEXT NOT NULL,
+                    hunger INTEGER DEFAULT 100,
+                    thirst INTEGER DEFAULT 100,
+                    happiness INTEGER DEFAULT 100,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (user_id)
+                )
+            ''')
+
             await db.commit()
             logger.info("База данных инициализирована")
+
+    async def create_pet(self, user_id: int, name: str):
+        """Создание нового питомца"""
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute('''
+                INSERT INTO pets (user_id, name, last_updated) VALUES (?, ?, ?)
+            ''', (user_id, name, datetime.now()))
+            await db.commit()
+            logger.info(f"Создан новый питомец '{name}' для пользователя {user_id}")
+
+    async def get_pet(self, user_id: int):
+        """Получение данных о питомце пользователя"""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute('SELECT * FROM pets WHERE user_id = ?', (user_id,)) as cursor:
+                pet_data = await cursor.fetchone()
+                return dict(pet_data) if pet_data else None
+
+    async def update_pet_stats(self, user_id: int, hunger: int, thirst: int, happiness: int):
+        """Обновление статов питомца"""
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute('''
+                UPDATE pets
+                SET hunger = ?, thirst = ?, happiness = ?, last_updated = ?
+                WHERE user_id = ?
+            ''', (hunger, thirst, happiness, datetime.now(), user_id))
+            await db.commit()
 
     async def add_user(self, user_id: int, username: str = None,
                        first_name: str = None, last_name: str = None):

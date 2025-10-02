@@ -38,3 +38,18 @@ def get_back_keyboard():
         [InlineKeyboardButton(text="◀️ Назад в меню", callback_data="back_to_main")]
     ])
     return keyboard
+
+
+def get_pet_keyboard():
+    """Клавиатура для взаимодействия с питомцем"""
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="🍖 Покормить", callback_data="pet_feed"),
+            InlineKeyboardButton(text="💧 Напоить", callback_data="pet_water"),
+            InlineKeyboardButton(text="🎾 Поиграть", callback_data="pet_play"),
+        ],
+        [
+            InlineKeyboardButton(text="◀️ Назад в меню", callback_data="back_to_main")
+        ]
+    ])
+    return keyboard
