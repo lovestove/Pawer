@@ -3,62 +3,826 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Твой Питомец</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Pawer - Твой цифровой питомец</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Анимированный фон с частицами */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Экран имени */
+        .name-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .name-screen h1 {
+            color: white;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .name-screen p {
+            color: rgba(255,255,255,0.9);
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .pet-input {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .pet-input:focus {
+            outline: none;
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Экран яйца */
+        .egg-screen {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .egg-container {
+            position: relative;
+            margin: 40px 0;
+        }
+
+        .egg {
+            width: 200px;
+            height: 250px;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fd79a8 100%);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: eggBounce 2s infinite;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .egg::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 10%;
+            right: 10%;
+            height: 30px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            filter: blur(5px);
+        }
+
+        .egg:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes eggBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .crack-animation {
+            animation: crack 0.5s;
+        }
+
+        @keyframes crack {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            50% { transform: scale(0.9) rotate(5deg); }
+            75% { transform: scale(1.05) rotate(-3deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+
+        .tap-hint {
+            font-size: 16px;
+            color: white;
+            margin-top: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Главный экран */
+        .main-screen {
+            display: none;
+        }
+
+        .pet-header {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .pet-name {
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .pet-level {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+            font-weight: 600;
+        }
+
+        .pet-display {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pet-character {
+            font-size: 120px;
+            margin: 20px 0;
+            animation: petIdle 3s infinite;
+            display: inline-block;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));
+        }
+
+        @keyframes petIdle {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        .pet-emotion {
+            font-size: 16px;
+            color: white;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        /* Статы */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .stat-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .stat-bar {
+            background: rgba(0,0,0,0.2);
+            height: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        .stat-fill.health { background: linear-gradient(90deg, #ff6b6b, #ff8787); }
+        .stat-fill.happiness { background: linear-gradient(90deg, #ffd93d, #ffed4e); }
+        .stat-fill.energy { background: linear-gradient(90deg, #6bcf7f, #51cf66); }
+        .stat-fill.hunger { background: linear-gradient(90deg, #ff922b, #ffa94d); }
+
+        /* Действия */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .action-icon {
+            font-size: 36px;
+        }
+
+        .action-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Нижнее меню */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(30px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 20px 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            padding: 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 12px;
+        }
+
+        .nav-btn:active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0.95);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 15px 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideDown 0.5s forwards;
+            max-width: 90%;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        @keyframes slideDown {
+            to { transform: translateX(-50%) translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Streak индикатор */
+        .streak-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            margin-top: 10px;
+        }
+
+        /* Анимация действия */
+        .action-animation {
+            animation: actionPop 0.6s;
+        }
+
+        @keyframes actionPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            .pet-character {
+                font-size: 100px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div id="loader" class="loader">Загрузка...</div>
+    <!-- Анимированный фон -->
+    <div class="bg-particles" id="particles"></div>
 
-    <div id="no-pet" class="hidden">
-        <div class="pet-avatar"><i class="fa-solid fa-hand-sparkles"></i></div>
-        <h1>Добро пожаловать!</h1>
-        <p>Похоже, у вас еще нет своего питомца. <br>Создайте его в боте, чтобы начать заботиться о нем!</p>
-        <p class="hint">Используйте команду <code>/pet</code> в чате с ботом.</p>
+    <div class="container">
+        <!-- Экран ввода имени -->
+        <div class="name-screen" id="nameScreen">
+            <h1>🎉 Добро пожаловать!</h1>
+            <p>Начни своё приключение с цифровым питомцем</p>
+
+            <div class="glass-card">
+                <div class="input-group">
+                    <input
+                        type="text"
+                        class="pet-input"
+                        id="petNameInput"
+                        placeholder="Как назовёшь питомца?"
+                        maxlength="15"
+                    >
+                </div>
+                <button class="btn btn-primary" onclick="startGame()">
+                    Начать приключение ✨
+                </button>
+            </div>
+        </div>
+
+        <!-- Экран с яйцом -->
+        <div class="egg-screen" id="eggScreen">
+            <h1 style="color: white; font-size: 28px; margin-bottom: 10px;">
+                Магическое яйцо 🥚
+            </h1>
+            <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">
+                Нажми на яйцо, чтобы узнать, кто внутри!
+            </p>
+
+            <div class="egg-container">
+                <div class="egg" id="egg" onclick="hatchEgg()"></div>
+            </div>
+
+            <p class="tap-hint">👆 Нажми на яйцо</p>
+        </div>
+
+        <!-- Главный экран -->
+        <div class="main-screen" id="mainScreen">
+            <!-- Заголовок -->
+            <div class="pet-header">
+                <div class="pet-name" id="petName">Пушок</div>
+                <div class="pet-level">Уровень 1 • 0/100 XP</div>
+                <div class="streak-badge">
+                    🔥 Серия: <span id="streakCount">1</span> дней
+                </div>
+            </div>
+
+            <!-- Питомец -->
+            <div class="pet-display">
+                <div class="pet-character" id="petCharacter">🐱</div>
+                <div class="pet-emotion" id="petEmotion">Счастлив и доволен! 😊</div>
+            </div>
+
+            <!-- Статы -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">❤️ Здоровье</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill health" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">😊 Счастье</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill happiness" style="width: 85%"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">⚡ Энергия</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill energy" style="width: 70%"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">🍕 Сытость</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill hunger" style="width: 60%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Действия -->
+            <div class="actions-grid">
+                <button class="action-btn" onclick="feedPet()">
+                    <div class="action-icon">🍖</div>
+                    <div class="action-label">Покормить</div>
+                </button>
+                <button class="action-btn" onclick="playWithPet()">
+                    <div class="action-icon">🎮</div>
+                    <div class="action-label">Играть</div>
+                </button>
+                <button class="action-btn" onclick="washPet()">
+                    <div class="action-icon">🛁</div>
+                    <div class="action-label">Помыть</div>
+                </button>
+                <button class="action-btn" onclick="walkPet()">
+                    <div class="action-icon">🌳</div>
+                    <div class="action-label">Прогулка</div>
+                </button>
+            </div>
+
+            <div style="height: 80px"></div>
+        </div>
     </div>
 
-    <div id="pet-app" class="hidden">
-        <div class="pet-container">
-            <h1 id="pet-name"></h1>
-            <div class="pet-avatar">
-                <span id="pet-emotion"><i class="fa-solid fa-face-smile"></i></span>
-            </div>
-        </div>
-
-        <div class="stats-container">
-            <div class="stat">
-                <label for="hunger-bar">Голод:</label>
-                <div class="progress-bar-container">
-                    <div id="hunger-bar" class="progress-bar"></div>
-                </div>
-                <span id="hunger-value"></span>
-            </div>
-            <div class="stat">
-                <label for="thirst-bar">Жажда:</label>
-                <div class="progress-bar-container">
-                    <div id="thirst-bar" class="progress-bar"></div>
-                </div>
-                <span id="thirst-value"></span>
-            </div>
-            <div class="stat">
-                <label for="happiness-bar">Счастье:</label>
-                <div class="progress-bar-container">
-                    <div id="happiness-bar" class="progress-bar"></div>
-                </div>
-                <span id="happiness-value"></span>
-            </div>
-        </div>
-
-        <div class="actions-container">
-            <button id="feed-button" class="action-button"><i class="fa-solid fa-utensils"></i> Покормить</button>
-            <button id="water-button" class="action-button"><i class="fa-solid fa-droplet"></i> Напоить</button>
-            <button id="play-button" class="action-button"><i class="fa-solid fa-baseball-ball"></i> Поиграть</button>
-        </div>
-
-        <div id="error-message" class="error hidden"></div>
+    <!-- Нижняя навигация -->
+    <div class="bottom-nav hidden" id="bottomNav">
+        <button class="nav-btn">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">Дом</div>
+        </button>
+        <button class="nav-btn">
+            <div class="nav-icon">🎒</div>
+            <div class="nav-label">Инвентарь</div>
+        </button>
+        <button class="nav-btn">
+            <div class="nav-icon">👥</div>
+            <div class="nav-label">Друзья</div>
+        </button>
+        <button class="nav-btn">
+            <div class="nav-icon">🏆</div>
+            <div class="nav-label">Рейтинг</div>
+        </button>
     </div>
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // Создание частиц для фона
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.width = (Math.random() * 10 + 5) + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
+        // Доступные питомцы
+        const pets = [
+            { emoji: '🐱', name: 'Котик', type: 'cat' },
+            { emoji: '🐶', name: 'Щенок', type: 'dog' },
+            { emoji: '🐰', name: 'Зайчик', type: 'rabbit' },
+            { emoji: '🐹', name: 'Хомячок', type: 'hamster' },
+            { emoji: '🦊', name: 'Лисёнок', type: 'fox' },
+            { emoji: '🐼', name: 'Панда', type: 'panda' },
+            { emoji: '🦄', name: 'Единорог', type: 'unicorn' },
+            { emoji: '🐉', name: 'Дракончик', type: 'dragon' }
+        ];
+
+        let currentPet = null;
+        let petName = '';
+        let tapCount = 0;
+
+        // Показ уведомления
+        function showNotification(message) {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.textContent = message;
+            document.body.appendChild(notif);
+
+            setTimeout(() => {
+                notif.style.animation = 'slideDown 0.5s reverse';
+                setTimeout(() => notif.remove(), 500);
+            }, 2500);
+        }
+
+        // Начало игры
+        function startGame() {
+            const input = document.getElementById('petNameInput');
+            petName = input.value.trim();
+
+            if (!petName) {
+                input.style.animation = 'shake 0.5s';
+                setTimeout(() => input.style.animation = '', 500);
+                return;
+            }
+
+            document.getElementById('nameScreen').style.display = 'none';
+            document.getElementById('eggScreen').style.display = 'flex';
+        }
+
+        // Вылупление питомца
+        function hatchEgg() {
+            const egg = document.getElementById('egg');
+            tapCount++;
+
+            egg.classList.add('crack-animation');
+            setTimeout(() => egg.classList.remove('crack-animation'), 500);
+
+            if (tapCount >= 3) {
+                // Выбор случайного питомца
+                currentPet = pets[Math.floor(Math.random() * pets.length)];
+
+                // Анимация исчезновения яйца
+                egg.style.animation = 'none';
+                egg.style.transform = 'scale(0)';
+                egg.style.opacity = '0';
+
+                setTimeout(() => {
+                    document.getElementById('eggScreen').style.display = 'none';
+                    document.getElementById('mainScreen').style.display = 'block';
+                    document.getElementById('bottomNav').classList.remove('hidden');
+
+                    // Установка имени и питомца
+                    document.getElementById('petName').textContent = petName;
+                    document.getElementById('petCharacter').textContent = currentPet.emoji;
+
+                    showNotification(`${currentPet.name} ${petName} родился! 🎉`);
+                }, 500);
+            }
+        }
+
+        // Действия с питомцем
+        function feedPet() {
+            const character = document.getElementById('petCharacter');
+            character.classList.add('action-animation');
+            setTimeout(() => character.classList.remove('action-animation'), 600);
+
+            showNotification('Ням-ням! Вкусно! 😋');
+            updateStat('hunger', 15);
+            updateStat('happiness', 5);
+            updateEmotion('Сыт и доволен! 😊');
+        }
+
+        function playWithPet() {
+            const character = document.getElementById('petCharacter');
+            character.classList.add('action-animation');
+            setTimeout(() => character.classList.remove('action-animation'), 600);
+
+            showNotification('Ура! Это было весело! 🎉');
+            updateStat('happiness', 20);
+            updateStat('energy', -10);
+            updateEmotion('В восторге! 🤩');
+        }
+
+        function washPet() {
+            const character = document.getElementById('petCharacter');
+            character.classList.add('action-animation');
+            setTimeout(() => character.classList.remove('action-animation'), 600);
+
+            showNotification('Теперь чистый и свежий! ✨');
+            updateStat('health', 10);
+            updateStat('happiness', 10);
+            updateEmotion('Чистенький! 💫');
+        }
+
+        function walkPet() {
+            const character = document.getElementById('petCharacter');
+            character.classList.add('action-animation');
+            setTimeout(() => character.classList.remove('action-animation'), 600);
+
+            showNotification('Отличная прогулка! 🌳');
+            updateStat('happiness', 15);
+            updateStat('energy', -15);
+            updateStat('hunger', -10);
+            updateEmotion('Активен! 🏃');
+        }
+
+        function updateStat(statName, change) {
+            // Имитация обновления статов (в реальности это будет через API)
+            const statBars = {
+                'hunger': document.querySelector('.stat-fill.hunger'),
+                'happiness': document.querySelector('.stat-fill.happiness'),
+                'energy': document.querySelector('.stat-fill.energy'),
+                'health': document.querySelector('.stat-fill.health')
+            };
+
+            const bar = statBars[statName];
+            if (bar) {
+                let currentWidth = parseInt(bar.style.width);
+                let newWidth = Math.max(0, Math.min(100, currentWidth + change));
+                bar.style.width = newWidth + '%';
+            }
+        }
+
+        function updateEmotion(emotion) {
+            document.getElementById('petEmotion').textContent = emotion;
+        }
+
+        // Добавляем анимацию тряски
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Симуляция снижения статов со временем
+        setInterval(() => {
+            updateStat('hunger', -2);
+            updateStat('energy', -1);
+
+            // Проверка низких статов
+            const hungerBar = document.querySelector('.stat-fill.hunger');
+            const energyBar = document.querySelector('.stat-fill.energy');
+
+            if (parseInt(hungerBar.style.width) < 30) {
+                updateEmotion('Голодный... 😢');
+            } else if (parseInt(energyBar.style.width) < 30) {
+                updateEmotion('Устал... 😴');
+            }
+        }, 30000); // Каждые 30 секунд
+
+        // Инициализация Telegram WebApp
+        if (window.Telegram?.WebApp) {
+            const tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
+
+            // Настройка цветов под тему Telegram
+            if (tg.themeParams.bg_color) {
+                document.body.style.background = tg.themeParams.bg_color;
+            }
+
+            // Haptic feedback при действиях
+            window.feedPetOriginal = feedPet;
+            window.feedPet = function() {
+                tg.HapticFeedback.impactOccurred('medium');
+                feedPetOriginal();
+            };
+
+            window.playWithPetOriginal = playWithPet;
+            window.playWithPet = function() {
+                tg.HapticFeedback.impactOccurred('medium');
+                playWithPetOriginal();
+            };
+
+            window.washPetOriginal = washPet;
+            window.washPet = function() {
+                tg.HapticFeedback.impactOccurred('medium');
+                washPetOriginal();
+            };
+
+            window.walkPetOriginal = walkPet;
+            window.walkPet = function() {
+                tg.HapticFeedback.impactOccurred('medium');
+                walkPetOriginal();
+            };
+        }
+    </script>
 </body>
 </html>

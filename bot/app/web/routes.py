@@ -1,6 +1,7 @@
 import hmac
 import hashlib
 import json
+from typing import Union, Tuple
 from urllib.parse import parse_qsl
 
 from aiohttp import web
@@ -9,7 +10,7 @@ from app.core import Database, settings
 from app.handlers.pet import calculate_and_update_pet_stats, FEED_VALUE, WATER_VALUE, PLAY_VALUE
 
 
-def validate_init_data(init_data: str, bot_token: str) -> tuple[bool, dict | None]:
+def validate_init_data(init_data: str, bot_token: str) -> Tuple[bool, Union[dict, None]]:
     """
     Validates the initData received from the Telegram Mini App.
 
