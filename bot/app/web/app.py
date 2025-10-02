@@ -4,15 +4,28 @@ from aiohttp import web
 
 from .routes import get_pet_data, interact_with_pet
 
+# Define the path to the static files directory at the module level
+static_files_path = Path(__file__).parent.parent.parent.joinpath("mini_app")
+
+
+async def index(request: web.Request) -> web.FileResponse:
+    """
+    Serves the main index.html file for the Mini App.
+    """
+    return web.FileResponse(static_files_path / "index.html")
+
 
 def setup_routes(app: web.Application):
     """Set up the application's routes."""
+    # API routes
     app.router.add_get("/api/pet", get_pet_data)
     app.router.add_post("/api/pet/interact", interact_with_pet)
 
-    # Serve static files for the Mini App
-    static_files_path = Path(__file__).parent.parent.parent.joinpath("mini_app")
-    app.router.add_static("/", path=static_files_path, name="static")
+    # Static files route
+    app.router.add_static("/static/", path=static_files_path, name="static")
+
+    # Main route for the Mini App's entry point
+    app.router.add_get("/", index)
 
 
 def setup_cors(app: web.Application):
