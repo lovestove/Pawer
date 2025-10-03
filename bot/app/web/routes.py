@@ -6,8 +6,9 @@ from urllib.parse import parse_qsl
 
 from aiohttp import web
 
-from app.core import Database, settings
-from app.handlers.pet import calculate_and_update_pet_stats, FEED_VALUE, WATER_VALUE, PLAY_VALUE
+from ..core.database import Database
+from ..core.config import settings
+from ..logic.pet_logic import calculate_and_update_pet_stats, FEED_VALUE, WATER_VALUE, PLAY_VALUE
 
 
 def validate_init_data(init_data: str, bot_token: str) -> Tuple[bool, Union[dict, None]]:

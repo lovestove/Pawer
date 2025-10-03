@@ -1,69 +1,79 @@
 import asyncio
 import logging
-
 from aiogram import Bot, Dispatcher
-from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.enums import ParseMode
 from aiohttp import web
 
-from app.core import settings, Database
-from app.handlers import setup_handlers
-from app.middlewares import user_middleware
-from app.web.app import create_web_app
+from app.core.config import settings
+from app.core.database import db
+from app.handlers import start, shop, eggs, payment, friends
+from app.web.server import create_app
+
+# Настройка логирования
+logging.basicConfig(
+    level=getattr(logging, settings.LOG_LEVEL),
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+async def on_startup(bot: Bot):
+    """Действия при запуске бота"""
+    await db.init()
+    logger.info("База данных инициализирована")
+
+    bot_info = await bot.get_me()
+    logger.info(f"Бот запущен: @{bot_info.username}")
+
+
+async def on_shutdown(bot: Bot):
+    """Действия при остановке бота"""
+    logger.info("Бот остановлен")
+
+
+async def start_bot():
+    """Запуск бота"""
+    bot = Bot(token=settings.BOT_TOKEN, parse_mode=ParseMode.HTML)
+    dp = Dispatcher()
+
+    # Регистрация роутеров
+    dp.include_router(start.router)
+    dp.include_router(shop.router)
+    dp.include_router(eggs.router)
+    dp.include_router(payment.router)
+    dp.include_router(friends.router)
+
+    # Регистрация событий
+    dp.startup.register(on_startup)
+    dp.shutdown.register(on_shutdown)
+
+    # Запуск polling
+    await dp.start_polling(bot)
+
+
+async def start_web():
+    """Запуск веб-сервера"""
+    app = create_app()
+    runner = web.AppRunner(app)
+    await runner.setup()
+
+    site = web.TCPSite(runner, '0.0.0.0', 8000)
+    await site.start()
+
+    logger.info(f"Веб-сервер запущен на {settings.BASE_URL}")
 
 
 async def main():
-    """Главная функция запуска"""
-    # Конфигурация логирования
-    logging.basicConfig(
-        level=settings.LOG_LEVEL,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    """Главная функция"""
+    # Запуск веб-сервера и бота параллельно
+    await asyncio.gather(
+        start_web(),
+        start_bot()
     )
-    logger = logging.getLogger(__name__)
-
-    # Инициализация базы данных
-    db = Database(settings.DATABASE_PATH)
-    await db.init_db()
-
-    # Инициализация бота и диспетчера
-    bot = Bot(token=settings.BOT_TOKEN, parse_mode="HTML")
-    storage = MemoryStorage()
-    dp = Dispatcher(storage=storage)
-
-    # Передача экземпляра базы данных в хендлеры и middleware
-    dp["db"] = db
-
-    # Настройка middleware
-    dp.message.middleware(user_middleware)
-
-    # Настройка хендлеров
-    router = setup_handlers()
-    dp.include_router(router)
-
-    # Создание и запуск веб-приложения
-    web_app = create_web_app(db=db)
-    runner = web.AppRunner(web_app)
-    await runner.setup()
-    site = web.TCPSite(runner, settings.WEB_SERVER_HOST, settings.WEB_SERVER_PORT)
-
-    logger.info("Starting bot and web server...")
-
-    # Удаление старых обновлений
-    await bot.delete_webhook(drop_pending_updates=True)
-
-    # Запуск обоих приложений
-    try:
-        await asyncio.gather(
-            dp.start_polling(bot),
-            site.start(),
-        )
-    finally:
-        await runner.cleanup()
-        await bot.session.close()
-        logger.info("Bot and web server stopped.")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     try:
         asyncio.run(main())
-    except (KeyboardInterrupt, SystemExit):
-        logging.info("Application stopped.")
+    except KeyboardInterrupt:
+        logger.info("Остановка приложения...")
