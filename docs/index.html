@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pawer - Твой Цифровой Питомец</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* === ШАПКА === */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .currency {
+            display: flex;
+            gap: 15px;
+        }
+
+        .currency-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: 600;
+        }
+
+        /* === КАРТОЧКА ПИТОМЦА === */
+        .pet-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .pet-visual {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .pet-image {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .pet-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-top: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .pet-level {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        /* === СТАТЫ === */
+        .stats {
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            margin-bottom: 15px;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .stat-bar {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .stat-health { background: linear-gradient(90deg, #ff6b6b, #ee5a6f); }
+        .stat-happiness { background: linear-gradient(90deg, #ffd93d, #ff9d00); }
+        .stat-intelligence { background: linear-gradient(90deg, #6c63ff, #a29bfe); }
+        .stat-energy { background: linear-gradient(90deg, #00d2ff, #3a7bd5); }
+
+        /* === XP БАР === */
+        .xp-section {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .xp-bar {
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .xp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* === КНОПКИ ДЕЙСТВИЙ === */
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .action-btn .icon {
+            font-size: 30px;
+        }
+
+        /* === МЕНЮ === */
+        .bottom-menu {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: flex;
+            gap: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 15px;
+        }
+
+        .menu-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .menu-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* === МОДАЛЬНЫЕ ОКНА === */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 30px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* === СПИСОК ПРЕДМЕТОВ === */
+        .item-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .item-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .item-card:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .item-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .item-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .item-price {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* === ИГРЫ === */
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 20px;
+            margin-top: 20px;
+        }
+
+        .game-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .game-btn {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .game-btn:active {
+            transform: scale(0.98);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* === УВЕДОМЛЕНИЯ === */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 15px 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            transition: transform 0.3s ease;
+            font-weight: 600;
+        }
+
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* === ЗАГРУЗКА === */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 400px) {
+            .pet-image {
+                width: 160px;
+                height: 160px;
+                font-size: 80px;
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <div class="container">
+        <!-- ШАПКА -->
+        <div class="header">
+            <div class="user-info">
+                <div class="avatar" id="userAvatar">👤</div>
+                <div>
+                    <div style="font-weight: 600;" id="userName">Загрузка...</div>
+                    <div style="font-size: 12px; opacity: 0.8;">Уровень: <span id="userLevel">1</span></div>
+                </div>
+            </div>
+            <div class="currency">
+                <div class="currency-item">
+                    <span>🪙</span>
+                    <span id="coins">0</span>
+                </div>
+                <div class="currency-item">
+                    <span>💎</span>
+                    <span id="crystals">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- КАРТОЧКА ПИТОМЦА -->
+        <div class="pet-card">
+            <div class="pet-visual">
+                <div class="pet-image" id="petImage">🐱</div>
+                <div class="pet-name" id="petName">Мой питомец</div>
+                <div class="pet-level">
+                    Уровень <span id="petLevel">1</span> •
+                    <span id="petSpecies">Котик</span>
+                </div>
+            </div>
+
+            <!-- XP БАР -->
+            <div class="xp-section">
+                <div style="font-size: 14px; opacity: 0.9;">
+                    Опыт: <span id="xpCurrent">0</span> / <span id="xpNeeded">100</span>
+                </div>
+                <div class="xp-bar">
+                    <div class="xp-fill" id="xpBar" style="width: 0%">
+                        <span id="xpPercent">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- СТАТЫ -->
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-header">
+                        <span>❤️ Здоровье</span>
+                        <span id="healthValue">100</span>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-fill stat-health" id="healthBar" style="width: 100%"></div>
+                    </div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-header">
+                        <span>😊 Настроение</span>
+                        <span id="happinessValue">100</span>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-fill stat-happiness" id="happinessBar" style="width: 100%"></div>
+                    </div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-header">
+                        <span>🧠 Интеллект</span>
+                        <span id="intelligenceValue">50</span>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-fill stat-intelligence" id="intelligenceBar" style="width: 50%"></div>
+                    </div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-header">
+                        <span>⚡ Энергия</span>
+                        <span id="energyValue">100</span>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-fill stat-energy" id="energyBar" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- КНОПКИ ДЕЙСТВИЙ -->
+            <div class="actions">
+                <button class="action-btn" onclick="openFeedModal()">
+                    <span class="icon">🍕</span>
+                    <span>Покормить</span>
+                </button>
+                <button class="action-btn" onclick="openPlayModal()">
+                    <span class="icon">🎮</span>
+                    <span>Играть</span>
+                </button>
+                <button class="action-btn" onclick="restPet()">
+                    <span class="icon">😴</span>
+                    <span>Отдых</span>
+                </button>
+                <button class="action-btn" onclick="openShopModal()">
+                    <span class="icon">🏪</span>
+                    <span>Магазин</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- НИЖНЕЕ МЕНЮ -->
+    <div class="bottom-menu">
+        <button class="menu-btn active" onclick="showScreen('home')">🏠</button>
+        <button class="menu-btn" onclick="showScreen('inventory')">🎒</button>
+        <button class="menu-btn" onclick="showScreen('arena')">⚔️</button>
+        <button class="menu-btn" onclick="showScreen('profile')">👤</button>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО: КОРМЛЕНИЕ -->
+    <div class="modal" id="feedModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🍕 Кормление</div>
+                <button class="close-btn" onclick="closeModal('feedModal')">×</button>
+            </div>
+            <div class="item-grid" id="foodList">
+                <!-- Еда будет загружена динамически -->
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО: ИГРЫ -->
+    <div class="modal" id="playModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🎮 Мини-игры</div>
+                <button class="close-btn" onclick="closeModal('playModal')">×</button>
+            </div>
+            <div class="game-container">
+                <button class="game-btn" onclick="playGame('emoji')">
+                    🎯 Угадай эмоджи
+                </button>
+                <button class="game-btn" onclick="playGame('memory')">
+                    🧠 Память
+                </button>
+                <button class="game-btn" onclick="playGame('quick')">
+                    ⚡ Быстрая реакция
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО: МАГАЗИН -->
+    <div class="modal" id="shopModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🏪 Магазин</div>
+                <button class="close-btn" onclick="closeModal('shopModal')">×</button>
+            </div>
+            <div class="item-grid" id="shopItems">
+                <!-- Предметы магазина -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Telegram Web App
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // Глобальные данные
+        let petData = {
+            id: 1,
+            name: 'Барсик',
+            species: 'cyber_cat',
+            emoji: '🐱',
+            level: 1,
+            xp: 0,
+            xp_needed: 100,
+            health: 100,
+            happiness: 100,
+            intelligence: 50,
+            energy: 100
+        };
+
+        let userData = {
+            name: 'Игрок',
+            coins: 100,
+            crystals: 10
+        };
+
+        // Еда для магазина
+        const foodItems = [
+            { id: 1, name: 'Хлеб', emoji: '🍞', price: 0, health: 10, happiness: 5 },
+            { id: 2, name: 'Пицца', emoji: '🍕', price: 50, health: 20, happiness: 25 },
+            { id: 3, name: 'Бургер', emoji: '🍔', price: 75, health: 25, happiness: 30 },
+            { id: 4, name: 'Суши', emoji: '🍱', price: 100, health: 30, happiness: 35, intelligence: 10 },
+            { id: 5, name: 'Торт', emoji: '🎂', price: 150, health: 15, happiness: 50 },
+            { id: 6, name: 'Энергетик', emoji: '⚡', price: 80, energy: 40 }
+        ];
+
+        // === ИНИЦИАЛИЗАЦИЯ ===
+        window.onload = function() {
+            loadUserData();
+            updateUI();
+            loadFoodList();
+            loadShopItems();
+        };
+
+        function loadUserData() {
+            // Получаем данные пользователя Telegram
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                userData.name = tg.initDataUnsafe.user.first_name;
+                document.getElementById('userAvatar').textContent =
+                    userData.name.charAt(0).toUpperCase();
+            }
+        }
+
+        // === ОБНОВЛЕНИЕ UI ===
+        function updateUI() {
+            // Пользователь
+            document.getElementById('userName').textContent = userData.name;
+            document.getElementById('userLevel').textContent = petData.level;
+            document.getElementById('coins').textContent = userData.coins;
+            document.getElementById('crystals').textContent = userData.crystals;
+
+            // Питомец
+            document.getElementById('petImage').textContent = petData.emoji;
+            document.getElementById('petName').textContent = petData.name;
+            document.getElementById('petLevel').textContent = petData.level;
+            document.getElementById('petSpecies').textContent = getSpeciesName(petData.species);
+
+            // XP
+            document.getElementById('xpCurrent').textContent = petData.xp;
+            document.getElementById('xpNeeded').textContent = petData.xp_needed;
+            let xpPercent = (petData.xp / petData.xp_needed * 100).toFixed(0);
+            document.getElementById('xpBar').style.width = xpPercent + '%';
+            document.getElementById('xpPercent').textContent = xpPercent + '%';
+
+            // Статы
+            updateStat('health', petData.health);
+            updateStat('happiness', petData.happiness);
+            updateStat('intelligence', petData.intelligence);
+            updateStat('energy', petData.energy);
+        }
+
+        function updateStat(stat, value) {
+            value = Math.max(0, Math.min(100, value));
+            document.getElementById(stat + 'Value').textContent = Math.round(value);
+            document.getElementById(stat + 'Bar').style.width = value + '%';
+        }
+
+        function getSpeciesName(species) {
+            const names = {
+                'cyber_cat': 'Киберкот',
+                'dragon': 'Дракончик',
+                'cloud': 'Облачко',
+                'robo_dog': 'Робопёс'
+            };
+            return names[species] || 'Питомец';
+        }
+
+        // === МОДАЛЬНЫЕ ОКНА ===
+        function openFeedModal() {
+            document.getElementById('feedModal').classList.add('active');
+        }
+
+        function openPlayModal() {
+            document.getElementById('playModal').classList.add('active');
+        }
+
+        function openShopModal() {
+            document.getElementById('shopModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // === КОРМЛЕНИЕ ===
+        function loadFoodList() {
+            const foodList = document.getElementById('foodList');
+            foodList.innerHTML = '';
+
+            foodItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.onclick = () => feedPet(item);
+
+                card.innerHTML = `
+                    <div class="item-icon">${item.emoji}</div>
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-price">
+                        ${item.price === 0 ? 'Бесплатно' : '🪙 ' + item.price}
+                    </div>
+                `;
+
+                foodList.appendChild(card);
+            });
+        }
+
+        function feedPet(food) {
+            // Проверка денег
+            if (food.price > userData.coins) {
+                showNotification('❌ Недостаточно монет!');
+                return;
+            }
+
+            // Списываем деньги
+            if (food.price > 0) {
+                userData.coins -= food.price;
+            }
+
+            // Применяем эффекты
+            if (food.health) petData.health = Math.min(100, petData.health + food.health);
+            if (food.happiness) petData.happiness = Math.min(100, petData.happiness + food.happiness);
+            if (food.intelligence) petData.intelligence = Math.min(100, petData.intelligence + food.intelligence);
+            if (food.energy) petData.energy = Math.min(100, petData.energy + food.energy);
+
+            // Даем XP
+            addXP(10);
+
+            updateUI();
+            closeModal('feedModal');
+            showNotification(`${petData.name} доволен! ${food.emoji} Вкусно!`);
+        }
+
+        // === ИГРЫ ===
+        function playGame(gameType) {
+            if (petData.energy < 10) {
+                showNotification('😴 Питомец слишком устал! Дай ему отдохнуть');
+                return;
+            }
+
+            // Тратим энергию
+            petData.energy = Math.max(0, petData.energy - 10);
+
+            // Повышаем счастье
+            petData.happiness = Math.min(100, petData.happiness + 15);
+
+            // Даем XP
+            const xpGained = Math.floor(Math.random() * 30) + 20;
+            addXP(xpGained);
+
+            updateUI();
+            closeModal('playModal');
+            showNotification(`🎮 Отлично поиграли! +${xpGained} XP`);
+        }
+
+        // === ОТДЫХ ===
+        function restPet() {
+            petData.energy = Math.min(100, petData.energy + 30);
+            updateUI();
+            showNotification('😴 Питомец отдохнул и восстановил энергию!');
+        }
+
+        // === XP И УРОВНИ ===
+        function addXP(amount) {
+            petData.xp += amount;
+
+            // Проверка levelup
+            while (petData.xp >= petData.xp_needed) {
+                petData.xp -= petData.xp_needed;
+                petData.level++;
+                petData.xp_needed = petData.level * 100;
+                showNotification(`🎉 УРОВЕНЬ ПОВЫШЕН! Теперь ${petData.level} уровень!`);
+            }
+        }
+
+        // === МАГАЗИН ===
+        function loadShopItems() {
+            const shopItems = document.getElementById('shopItems');
+            shopItems.innerHTML = '';
+
+            const premiumItems = [
+                { id: 101, name: 'Золотое яблоко', emoji: '🍎', price: 500, type: 'crystal', effect: 'Все статы +50' },
+                { id: 102, name: 'Космобургер', emoji: '🍔', price: 300, type: 'crystal', effect: 'x2 XP на час' },
+                { id: 103, name: 'Радужный торт', emoji: '🌈', price: 200, type: 'crystal', effect: '+100 счастья' }
+            ];
+
+            premiumItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.onclick = () => buyItem(item);
+
+                card.innerHTML = `
+                    <div class="item-icon">${item.emoji}</div>
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-price">💎 ${item.price}</div>
+                    <div style="font-size: 10px; opacity: 0.7; margin-top: 5px;">${item.effect}</div>
+                `;
+
+                shopItems.appendChild(card);
+            });
+        }
+
+        function buyItem(item) {
+            if (item.type === 'crystal' && userData.crystals < item.price) {
+                showNotification('❌ Недостаточно кристаллов!');
+                return;
+            }
+
+            userData.crystals -= item.price;
+            showNotification(`✅ Куплено: ${item.emoji} ${item.name}`);
+            updateUI();
+        }
+
+        // === УВЕДОМЛЕНИЯ ===
+        function showNotification(text) {
+            const notification = document.getElementById('notification');
+            notification.textContent = text;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // === НАВИГАЦИЯ ===
+        function showScreen(screen) {
+            // Убираем active со всех кнопок
+            document.querySelectorAll('.menu-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Добавляем active к нажатой кнопке
+            event.target.classList.add('active');
+
+            // TODO: Переключение экранов
+            showNotification(`Экран "${screen}" в разработке! 🚧`);
+        }
+
+        // Автообновление статов каждые 30 секунд
+        setInterval(() => {
+            // Небольшое снижение статов со временем
+            petData.health = Math.max(10, petData.health - 0.5);
+            petData.happiness = Math.max(10, petData.happiness - 0.3);
+            petData.energy = Math.max(0, petData.energy - 0.2);
+            updateUI();
+        }, 30000);
+    </script>
+</body>
+</html>
