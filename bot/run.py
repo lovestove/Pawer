@@ -1,79 +1,28 @@
 import asyncio
 import logging
 from aiogram import Bot, Dispatcher
-from aiogram.enums import ParseMode
-from aiohttp import web
+from aiogram.enums.parse_mode import ParseMode
+from aiogram.client.default import DefaultBotProperties
 
-from app.core.config import settings
-from app.core.database import db
-from app.handlers import start, shop, eggs, payment, friends
-from app.web.server import create_app
+from config_reader import config
+from bot.handlers import user_handlers, admin_handlers
 
-# Настройка логирования
-logging.basicConfig(
-    level=getattr(logging, settings.LOG_LEVEL),
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
+async def main():
 
-async def on_startup(bot: Bot):
-    """Действия при запуске бота"""
-    await db.init()
-    logger.info("База данных инициализирована")
+    bot = Bot(token=config.BOT_TOKEN.get_secret_value(),
+              default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
-    bot_info = await bot.get_me()
-    logger.info(f"Бот запущен: @{bot_info.username}")
-
-
-async def on_shutdown(bot: Bot):
-    """Действия при остановке бота"""
-    logger.info("Бот остановлен")
-
-
-async def start_bot():
-    """Запуск бота"""
-    bot = Bot(token=settings.BOT_TOKEN, parse_mode=ParseMode.HTML)
     dp = Dispatcher()
 
-    # Регистрация роутеров
-    dp.include_router(start.router)
-    dp.include_router(shop.router)
-    dp.include_router(eggs.router)
-    dp.include_router(payment.router)
-    dp.include_router(friends.router)
+    dp.include_router(admin_handlers.router)
+    dp.include_router(user_handlers.router)
 
-    # Регистрация событий
-    dp.startup.register(on_startup)
-    dp.shutdown.register(on_shutdown)
+    await bot.delete_webhook(drop_pending_updates=True)
 
-    # Запуск polling
     await dp.start_polling(bot)
 
 
-async def start_web():
-    """Запуск веб-сервера"""
-    app = create_app()
-    runner = web.AppRunner(app)
-    await runner.setup()
-
-    site = web.TCPSite(runner, '0.0.0.0', 8000)
-    await site.start()
-
-    logger.info(f"Веб-сервер запущен на {settings.BASE_URL}")
-
-
-async def main():
-    """Главная функция"""
-    # Запуск веб-сервера и бота параллельно
-    await asyncio.gather(
-        start_web(),
-        start_bot()
-    )
-
-
 if __name__ == '__main__':
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        logger.info("Остановка приложения...")
+    asyncio.run(main())
